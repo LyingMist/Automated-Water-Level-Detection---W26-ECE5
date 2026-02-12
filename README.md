@@ -1,8 +1,10 @@
-# XIAO ESP32C3 Water Level Monitor
+# XIAO ESP32C3 Water Level Monitor (Current Version: V1.0.1)
 
 PlatformIO project for Seeed Studio XIAO ESP32C3 that measures water distance with a
 VL53L4CD time-of-flight sensor and renders live status on a 0.96" IPS LCD (80x160)
 driven by ST7735 over SPI.
+
+**Current Version:** `V1.0.1`
 
 ## Hardware
 
@@ -94,3 +96,8 @@ pio device monitor -b 115200
   - Adafruit VL53L4CD
   - Adafruit GFX Library
   - Adafruit ST7735 and ST7789 Library
+
+## Version History
+
+- **V1.0.0 - Initial Release:** Basic distance detection and hardware setup (Sensor + Display).
+- **V1.0.1 (Current) - Feature Update:** Changed display output from raw millimeters to Water Level Percentage with 3-significant-figure precision.

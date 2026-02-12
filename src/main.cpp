@@ -13,7 +13,6 @@ constexpr uint8_t PIN_TFT_CS = 2;     // XIAO D2
 constexpr uint8_t PIN_TFT_DC = 1;     // XIAO D1
 constexpr uint8_t PIN_TFT_RST = 0;    // XIAO D0
 
-constexpr uint16_t WATER_EMPTY_THRESHOLD_MM = 350;
 constexpr unsigned long SAMPLE_INTERVAL_MS = 500;
 
 DistanceSensor distanceSensor;
@@ -57,11 +56,8 @@ void loop() {
     return;
   }
 
-  const bool levelLow = distanceMm > WATER_EMPTY_THRESHOLD_MM;
-  display.showMeasurement(distanceMm, levelLow);
+  display.showMeasurement(distanceMm);
 
   Serial.print("Distance (mm): ");
-  Serial.print(distanceMm);
-  Serial.print(" | Status: ");
-  Serial.println(levelLow ? "LOW" : "OK");
+  Serial.println(distanceMm);
 }
