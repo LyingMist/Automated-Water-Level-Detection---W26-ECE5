@@ -66,8 +66,8 @@ ECE5_Xiao_Display/
 1. Clone repository:
 
 ```bash
-git clone https://github.com/<your-username>/ECE5_Xiao_Display.git
-cd ECE5_Xiao_Display
+git clone https://github.com/LyingMist/Automated-Water-Level-Detection---W26-ECE5.git
+cd Automated-Water-Level-Detection---W26-ECE5
 ```
 
 2. Build firmware:
