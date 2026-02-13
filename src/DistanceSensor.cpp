@@ -1,13 +1,27 @@
 #include "DistanceSensor.h"
 
+DistanceSensor::DistanceSensor() : sensor(&Wire, -1) {}
+
 bool DistanceSensor::begin(TwoWire& wirePort) {
-  if (!sensor_.begin(0x29, &wirePort)) {
+  (void)wirePort;
+
+  Wire.begin();
+
+  if (sensor.begin() != 0) {
     initialized_ = false;
     return false;
   }
 
-  sensor_.setRangeTiming(50, 0);
-  sensor_.startRanging();
+  if (sensor.InitSensor() != 0) {
+    initialized_ = false;
+    return false;
+  }
+
+  if (sensor.VL53L4CD_StartRanging() != 0) {
+    initialized_ = false;
+    return false;
+  }
+
   initialized_ = true;
   return true;
 }
@@ -17,15 +31,23 @@ int DistanceSensor::readDistanceMm() {
     return -1;
   }
 
-  if (!sensor_.dataReady()) {
+  uint8_t newDataReady = 0;
+  if (sensor.VL53L4CD_CheckForDataReady(&newDataReady) != 0) {
     return -1;
   }
 
-  VL53L4CD_Result_t result;
-  if (!sensor_.getResult(&result)) {
+  if (!newDataReady) {
     return -1;
   }
 
-  sensor_.clearInterrupt();
-  return static_cast<int>(result.distance_mm);
+  VL53L4CD_Result_t results;
+  if (sensor.VL53L4CD_GetResult(&results) != 0) {
+    return -1;
+  }
+
+  if (sensor.VL53L4CD_ClearInterrupt() != 0) {
+    return -1;
+  }
+
+  return static_cast<int>(results.distance_mm);
 }
