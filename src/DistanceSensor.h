@@ -8,7 +8,7 @@ class DistanceSensor {
  public:
   DistanceSensor();
   bool begin(TwoWire& wirePort);
-  int readDistanceMm();
+  int readDistance();
 
  private:
   VL53L4CD sensor;

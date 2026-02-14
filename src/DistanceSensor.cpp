@@ -5,8 +5,6 @@ DistanceSensor::DistanceSensor() : sensor(&Wire, -1) {}
 bool DistanceSensor::begin(TwoWire& wirePort) {
   (void)wirePort;
 
-  Wire.begin();
-
   if (sensor.begin() != 0) {
     initialized_ = false;
     return false;
@@ -26,7 +24,7 @@ bool DistanceSensor::begin(TwoWire& wirePort) {
   return true;
 }
 
-int DistanceSensor::readDistanceMm() {
+int DistanceSensor::readDistance() {
   if (!initialized_) {
     return -1;
   }

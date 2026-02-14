@@ -1,18 +1,17 @@
 #include <Arduino.h>
-#include <SPI.h>
 #include <Wire.h>
 #include "DisplayDriver.h"
 #include "DistanceSensor.h"
 
 namespace {
-constexpr uint8_t PIN_I2C_SDA = 6;    // XIAO D4
-constexpr uint8_t PIN_I2C_SCL = 7;    // XIAO D5
-constexpr uint8_t PIN_SPI_SCK = 8;    // XIAO D8
-constexpr uint8_t PIN_SPI_MOSI = 10;  // XIAO D10
-constexpr uint8_t PIN_TFT_CS = 2;     // XIAO D2
-constexpr uint8_t PIN_TFT_DC = 1;     // XIAO D1
-constexpr uint8_t PIN_TFT_RST = 0;    // XIAO D0
+constexpr uint8_t PIN_I2C_SDA = D4;
+constexpr uint8_t PIN_I2C_SCL = D5;
+constexpr uint8_t PIN_TFT_CS = D2;
+constexpr uint8_t PIN_TFT_DC = D1;
+constexpr uint8_t PIN_TFT_RST = D0;
 
+const int MIN_DISTANCE_MM = 50;
+const int MAX_DISTANCE_MM = 300;
 constexpr unsigned long SAMPLE_INTERVAL_MS = 500;
 
 DistanceSensor distanceSensor;
@@ -26,7 +25,6 @@ void setup() {
   Serial.println("XIAO ESP32C3 Water Level Monitor booting...");
 
   Wire.begin(PIN_I2C_SDA, PIN_I2C_SCL);
-  SPI.begin(PIN_SPI_SCK, -1, PIN_SPI_MOSI, PIN_TFT_CS);
 
   if (!display.begin()) {
     Serial.println("Display init failed");
@@ -49,15 +47,25 @@ void loop() {
   }
   lastSampleMs = now;
 
-  const int distanceMm = distanceSensor.readDistanceMm();
-  if (distanceMm < 0) {
+  const int distance = distanceSensor.readDistance();
+  if (distance < 0) {
     Serial.println("Distance read failed");
     display.showError("Read failed");
     return;
   }
 
-  display.showMeasurement(distanceMm);
+  float percent = 100.0f * (1.0f - (static_cast<float>(distance - MIN_DISTANCE_MM) /
+                                    (MAX_DISTANCE_MM - MIN_DISTANCE_MM)));
+  if (percent < 0.0f) {
+    percent = 0.0f;
+  } else if (percent > 100.0f) {
+    percent = 100.0f;
+  }
+
+  display.updateDisplay(distance, percent);
 
   Serial.print("Distance (mm): ");
-  Serial.println(distanceMm);
+  Serial.print(distance);
+  Serial.print(" | Percent (%): ");
+  Serial.println(percent, 1);
 }

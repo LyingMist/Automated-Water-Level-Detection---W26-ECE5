@@ -1,14 +1,14 @@
-# XIAO ESP32C3 Water Level Monitor (Current Version: v1.0.2)
+# XIAO ESP32C3 Water Level Monitor (Current Version: v1.0.3)
 
 PlatformIO project for Seeed Studio XIAO ESP32C3 that measures water distance with a
 VL53L4CD time-of-flight sensor and renders live status on a 0.96" IPS LCD (80x160)
 driven by ST7735 over SPI.
 
-**Current Version:** `v1.0.2`
+**Current Version:** `v1.0.3`
 
 ## Currently Working On
 
-- Integrating the VL53L4CD sensor data with the ST7735 LCD to ensure the distance and water level percentage display correctly and smoothly on the screen.
+- Implementing the sensor lens/housing and performing actual water level detection tests to calibrate the minimum and maximum distance values.
 
 ## Hardware
 
@@ -135,7 +135,12 @@ Both folders currently include `.gitkeep` placeholders so the structure is track
 - **Code Improvements:** Changed display output from raw millimeters to water level percentage with 3-significant-figure precision.
 - **Logistics & Formatting Changes:** Updated README details for display behavior and version tracking.
 
-### V1.0.2 (Current)
+### V1.0.2
 
 - **Code Improvements:** Replaced the incompatible Adafruit VL53L4CD library with the official `stm32duino/STM32duino VL53L4CD` library. Refactored the sensor header and source files to utilize the correct STM32 C++ API.
 - **Logistics & Formatting Changes:** Added `images/` folder structure for physical build references and added a verified hardware pin mapping guide to the README.
+
+### V1.0.3 (Current)
+
+- **Code Improvements:** Successfully integrated sensor data with the display. Implemented 'Water Bottle Logic' (inverted distance calculation where closer = higher percentage). Added logic to clamp values between 0-100%.
+- **Logistics & Formatting:** identified and fixed BGR vs RGB color mapping for the ST7735 panel. Adjusted typography to use large, readable fonts with tightened spacing for the '%' symbol. Removed unused default directories (`lib/`, `include/`).
