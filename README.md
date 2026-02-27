@@ -36,15 +36,15 @@ ECE5_Xiao_Display/
 │  ├─ main.cpp
 │  ├─ DistanceSensor.h
 │  ├─ DistanceSensor.cpp
+│  ├─ TiltSensor.h
+│  ├─ TiltSensor.cpp
 │  ├─ DisplayDriver.h
 │  └─ DisplayDriver.cpp
 ├─ images/
 │  ├─ progress_pictures/
 │  │  ├─ .gitkeep
 │  │  └─ breadboard_wiring/
-│  │     ├─ Lab 1.JPG
-│  │     ├─ Lab 2.JPG
-│  │     └─ Lab 3.JPG
+│  │     └─ FullComp.jpg
 │  └─ pinouts/
 │     ├─ .gitkeep
 │     └─ XIAO ESP32C3 .png
