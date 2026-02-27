@@ -86,38 +86,51 @@ void DisplayDriver::updateDisplay(int distanceMM, float percentage) {
     valueColor = kCustomRedColor;
   }
 
-  // Build helper strings only for centering calculations.
-  char numberText[12];
-  snprintf(numberText, sizeof(numberText), "%.1f", percentage);
-  const char* percentSuffix = " %";
-
   tft_.setTextWrap(false);
-  tft_.setTextSize(kMainValueTextSize);
+  tft_.setTextSize(3);  // Set to 3 for better screen fit
   tft_.setTextColor(valueColor, kBackgroundColor);
-
-  int16_t xNum = 0;
-  int16_t yNum = 0;
-  uint16_t wNum = 0;
-  uint16_t hNum = 0;
-  tft_.getTextBounds(numberText, 0, 0, &xNum, &yNum, &wNum, &hNum);
-
-  int16_t xPct = 0;
-  int16_t yPct = 0;
-  uint16_t wPct = 0;
-  uint16_t hPct = 0;
-  tft_.getTextBounds(percentSuffix, 0, 0, &xPct, &yPct, &wPct, &hPct);
-
-  const uint16_t combinedWidth = static_cast<uint16_t>(wNum + wPct - kPercentTightenPx);
-  const uint16_t combinedHeight = (hNum > hPct) ? hNum : hPct;
-  const int16_t x = static_cast<int16_t>((SCREEN_W - combinedWidth) / 2);
-  const int16_t y = static_cast<int16_t>((SCREEN_H - combinedHeight) / 2 - yNum);
-
-  tft_.setCursor(x, y);
+  // Hardcode a safe, centered position
+  tft_.setCursor(20, 30);
   tft_.print(percentage, 1);
 
   const int16_t yPos = tft_.getCursorY();
   tft_.setCursor(tft_.getCursorX() - kPercentTightenPx, yPos);
   tft_.print(" %");
+}
+
+void DisplayDriver::showTiltWarning() {
+  if (!initialized_) {
+    return;
+  }
+
+  tft_.fillScreen(ST77XX_BLACK);
+  tft_.setTextWrap(false);
+  tft_.setTextColor(kCustomOrangeColor, ST77XX_BLACK);
+
+  const uint8_t kWarningTextSize = 3;
+  tft_.setTextSize(kWarningTextSize);
+
+  int16_t x1 = 0;
+  int16_t y1 = 0;
+  uint16_t w = 0;
+  uint16_t h = 0;
+
+  tft_.getTextBounds("TILTED", 0, 0, &x1, &y1, &w, &h);
+  const int16_t titleX = static_cast<int16_t>((SCREEN_W - w) / 2);
+  const int16_t titleY = 18;
+  tft_.setCursor(titleX, titleY);
+  tft_.print("TILTED");
+
+  tft_.setTextSize(2);
+  tft_.getTextBounds("Paused", 0, 0, &x1, &y1, &w, &h);
+  const int16_t subtitleX = static_cast<int16_t>((SCREEN_W - w) / 2);
+  const int16_t subtitleY = 54;
+  tft_.setCursor(subtitleX, subtitleY);
+  tft_.print("Paused");
+
+  // Force updateDisplay() to repaint when tilt clears.
+  hasLastPercentage_ = false;
+  lastDisplayedTenths_ = -1;
 }
 
 void DisplayDriver::showError(const char* message) {

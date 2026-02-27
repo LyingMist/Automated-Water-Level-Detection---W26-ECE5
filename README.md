@@ -1,10 +1,10 @@
-# XIAO ESP32C3 Water Level Monitor (Current Version: v1.0.3)
+# XIAO ESP32C3 Water Level Monitor (Current Version: v1.0.4)
 
 PlatformIO project for Seeed Studio XIAO ESP32C3 that measures water distance with a
 VL53L4CD time-of-flight sensor and renders live status on a 0.96" IPS LCD (80x160)
 driven by ST7735 over SPI.
 
-**Current Version:** `v1.0.3`
+**Current Version:** `v1.0.4`
 
 ## Currently Working On
 
@@ -14,6 +14,7 @@ driven by ST7735 over SPI.
 
 - **MCU:** Seeed Studio XIAO ESP32C3
 - **Distance Sensor:** VL53L4CD (I2C)
+- **Accelerometer:** MPU-6050 (I2C)
 - **Display:** 0.96" IPS LCD, ST7735 controller, 80x160
 
 ## Software Architecture
@@ -64,6 +65,15 @@ ECE5_Xiao_Display/
 | `SDA` | `D4` | I2C data |
 
 Note: `XSHUT` and `GPIO` are intentionally left disconnected.
+
+### XIAO ESP32C3 <-> MPU-6050 (I2C)
+
+| MPU-6050 Pin | XIAO ESP32C3 Pin | Notes |
+|---|---|---|
+| `VCC` | `3V3` | Power |
+| `GND` | `GND` | Ground |
+| `SDA` | `D4` | Shared I2C data bus |
+| `SCL` | `D5` | Shared I2C clock bus |
 
 ### XIAO ESP32C3 <-> ST7735 Display (SPI)
 
@@ -125,22 +135,27 @@ Both folders currently include `.gitkeep` placeholders so the structure is track
 
 ## Version History
 
-### V1.0.0
+### V1.0.4 (Current)
 
-- **Code Improvements:** Initial release with basic distance detection and sensor/display integration.
-- **Logistics & Formatting Changes:** Established initial project structure and baseline documentation.
+- **Code Improvements:** Successfully wired and integrated the MPU-6050 accelerometer onto the shared I2C bus alongside the VL53L4CD. Implemented initial `TiltSensor` class to detect angled readings. Fixed severe ST7735 display bugs by removing unreliable dynamic bounds calculations (`getTextBounds`) in favor of stable, hardcoded absolute cursor positioning.
+- **Logistics & Formatting Changes:** Added Wiring Map for MPU-6050 and updating the breadboard_wiring pictures.
 
-### V1.0.1
+### V1.0.3
 
-- **Code Improvements:** Changed display output from raw millimeters to water level percentage with 3-significant-figure precision.
-- **Logistics & Formatting Changes:** Updated README details for display behavior and version tracking.
+- **Code Improvements:** Successfully integrated sensor data with the display. Implemented 'Water Bottle Logic' (inverted distance calculation where closer = higher percentage). Added logic to clamp values between 0-100%.
+- **Logistics & Formatting Changes:** Identified and fixed BGR vs RGB color mapping for the ST7735 panel. Adjusted typography to use large, readable fonts with tightened spacing for the '%' symbol. Removed unused default directories (`lib/`, `include/`).
 
 ### V1.0.2
 
 - **Code Improvements:** Replaced the incompatible Adafruit VL53L4CD library with the official `stm32duino/STM32duino VL53L4CD` library. Refactored the sensor header and source files to utilize the correct STM32 C++ API.
 - **Logistics & Formatting Changes:** Added `images/` folder structure for physical build references and added a verified hardware pin mapping guide to the README.
 
-### V1.0.3 (Current)
+### V1.0.1
 
-- **Code Improvements:** Successfully integrated sensor data with the display. Implemented 'Water Bottle Logic' (inverted distance calculation where closer = higher percentage). Added logic to clamp values between 0-100%.
-- **Logistics & Formatting:** identified and fixed BGR vs RGB color mapping for the ST7735 panel. Adjusted typography to use large, readable fonts with tightened spacing for the '%' symbol. Removed unused default directories (`lib/`, `include/`).
+- **Code Improvements:** Changed display output from raw millimeters to water level percentage with 3-significant-figure precision.
+- **Logistics & Formatting Changes:** Updated README details for display behavior and version tracking.
+
+### V1.0.0
+
+- **Code Improvements:** Initial release with basic distance detection and sensor/display integration.
+- **Logistics & Formatting Changes:** Established initial project structure and baseline documentation.

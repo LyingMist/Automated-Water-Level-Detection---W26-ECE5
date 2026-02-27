@@ -7,10 +7,11 @@
 class DistanceSensor {
  public:
   DistanceSensor();
+  ~DistanceSensor();
   bool begin(TwoWire& wirePort);
   int readDistance();
 
  private:
-  VL53L4CD sensor;
+  VL53L4CD* sensor_ = nullptr;
   bool initialized_ = false;
 };

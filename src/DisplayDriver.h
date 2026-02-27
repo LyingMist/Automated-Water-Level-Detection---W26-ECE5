@@ -11,6 +11,7 @@ class DisplayDriver {
   void showSplash(const char* title, const char* subtitle);
   // Renders a large centered percentage with color-threshold styling.
   void updateDisplay(int distanceMM, float percentage);
+  void showTiltWarning();
   void showError(const char* message);
 
  private:
