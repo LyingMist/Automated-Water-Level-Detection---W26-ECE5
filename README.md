@@ -127,6 +127,7 @@ pio device monitor -b 115200
   - STM32duino VL53L4CD
   - Adafruit GFX Library
   - Adafruit ST7735 and ST7789 Library
+  - Adafruit MPU6050 Library
 
 ## Project Images
 
