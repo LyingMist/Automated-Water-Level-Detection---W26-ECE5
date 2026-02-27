@@ -10,8 +10,14 @@ constexpr uint16_t SCREEN_H = 80;
 constexpr uint16_t kBackgroundColor = ST77XX_BLACK;
 constexpr uint16_t kCustomOrangeColor = 0x45DF;  // BGR-swapped for #fdb341
 constexpr uint16_t kCustomRedColor = 0x0811;     // BGR-swapped for #8f000b
-constexpr uint8_t kMainValueTextSize = 4;
+constexpr uint16_t kSloshColor = 0xD5B3;         // BGR565 for #9EB9DB
+constexpr uint16_t kTiltColor = 0x9EDA;          // BGR565 for #D8DB9E
+constexpr uint8_t kMainValueTextSize = 3;
 constexpr int16_t kPercentTightenPx = 4;
+constexpr int16_t kWarnMarginRight = 4;
+constexpr int16_t kWarnMarginBottom = 3;
+constexpr int16_t kWarnBoxWidth = 36;   // Fits "SLOSH" at text size 1
+constexpr int16_t kWarnBoxHeight = 10;  // One text row + small padding
 }  // namespace
 
 DisplayDriver::DisplayDriver(uint8_t csPin, uint8_t dcPin, uint8_t rstPin)
@@ -52,7 +58,7 @@ void DisplayDriver::showSplash(const char* title, const char* subtitle) {
   tft_.print(subtitle);
 }
 
-void DisplayDriver::updateDisplay(int distanceMM, float percentage) {
+void DisplayDriver::updateDisplay(int distanceMM, float percentage, bool isTilted, bool isSloshing) {
   if (!initialized_) {
     return;
   }
@@ -66,12 +72,18 @@ void DisplayDriver::updateDisplay(int distanceMM, float percentage) {
   }
 
   const int displayedTenths = static_cast<int>(lroundf(percentage * 10.0f));
-  if (hasLastPercentage_ && displayedTenths == lastDisplayedTenths_) {
+  const bool hasStateHistory = hasLastTiltState_ && hasLastSloshState_;
+  if (hasLastPercentage_ && displayedTenths == lastDisplayedTenths_ && hasStateHistory &&
+      lastTiltState_ == isTilted && lastSloshState_ == isSloshing) {
     return;
   }
 
   lastDisplayedTenths_ = displayedTenths;
   hasLastPercentage_ = true;
+  hasLastTiltState_ = true;
+  lastTiltState_ = isTilted;
+  hasLastSloshState_ = true;
+  lastSloshState_ = isSloshing;
 
   tft_.fillScreen(kBackgroundColor);
 
@@ -87,50 +99,32 @@ void DisplayDriver::updateDisplay(int distanceMM, float percentage) {
   }
 
   tft_.setTextWrap(false);
-  tft_.setTextSize(3);  // Set to 3 for better screen fit
+  tft_.setTextSize(kMainValueTextSize);
   tft_.setTextColor(valueColor, kBackgroundColor);
-  // Hardcode a safe, centered position
+  // Keep stable value placement for predictable redraws.
   tft_.setCursor(20, 30);
   tft_.print(percentage, 1);
 
   const int16_t yPos = tft_.getCursorY();
   tft_.setCursor(tft_.getCursorX() - kPercentTightenPx, yPos);
   tft_.print(" %");
-}
 
-void DisplayDriver::showTiltWarning() {
-  if (!initialized_) {
-    return;
+  // Bottom-right warning area with strict priority: SLOSH over TILT.
+  const int16_t warnX = SCREEN_W - kWarnBoxWidth - kWarnMarginRight;
+  const int16_t warnY = SCREEN_H - kWarnBoxHeight - kWarnMarginBottom;
+  const int16_t warnTextY = warnY + 1;
+  tft_.fillRect(warnX, warnY, kWarnBoxWidth, kWarnBoxHeight, kBackgroundColor);
+  tft_.setTextSize(1);
+
+  if (isSloshing) {
+    tft_.setTextColor(kSloshColor, kBackgroundColor);
+    tft_.setCursor(warnX, warnTextY);
+    tft_.print("SLOSH");
+  } else if (isTilted) {
+    tft_.setTextColor(kTiltColor, kBackgroundColor);
+    tft_.setCursor(warnX + 7, warnTextY);  // Right-align shorter label in same box.
+    tft_.print("TILT");
   }
-
-  tft_.fillScreen(ST77XX_BLACK);
-  tft_.setTextWrap(false);
-  tft_.setTextColor(kCustomOrangeColor, ST77XX_BLACK);
-
-  const uint8_t kWarningTextSize = 3;
-  tft_.setTextSize(kWarningTextSize);
-
-  int16_t x1 = 0;
-  int16_t y1 = 0;
-  uint16_t w = 0;
-  uint16_t h = 0;
-
-  tft_.getTextBounds("TILTED", 0, 0, &x1, &y1, &w, &h);
-  const int16_t titleX = static_cast<int16_t>((SCREEN_W - w) / 2);
-  const int16_t titleY = 18;
-  tft_.setCursor(titleX, titleY);
-  tft_.print("TILTED");
-
-  tft_.setTextSize(2);
-  tft_.getTextBounds("Paused", 0, 0, &x1, &y1, &w, &h);
-  const int16_t subtitleX = static_cast<int16_t>((SCREEN_W - w) / 2);
-  const int16_t subtitleY = 54;
-  tft_.setCursor(subtitleX, subtitleY);
-  tft_.print("Paused");
-
-  // Force updateDisplay() to repaint when tilt clears.
-  hasLastPercentage_ = false;
-  lastDisplayedTenths_ = -1;
 }
 
 void DisplayDriver::showError(const char* message) {

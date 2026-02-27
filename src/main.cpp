@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include <math.h>
 #include "DisplayDriver.h"
 #include "DistanceSensor.h"
 #include "TiltSensor.h"
@@ -19,6 +20,8 @@ DistanceSensor distanceSensor;
 TiltSensor tiltSensor;
 DisplayDriver display(PIN_TFT_CS, PIN_TFT_DC, PIN_TFT_RST);
 unsigned long lastSampleMs = 0;
+bool hasStablePercent = false;
+float stablePercent = 0.1f;
 }  // namespace
 
 void setup() {
@@ -55,12 +58,7 @@ void loop() {
   }
   lastSampleMs = now;
 
-  if (tiltSensor.isTilted()) {
-    display.showTiltWarning();
-    Serial.println("Status: TILTED");
-    return;
-  }
-
+  // I2C priority: always read VL53L4CD first.
   const int distance = distanceSensor.readDistance();
   if (distance < 0) {
     Serial.println("Distance read failed");
@@ -68,7 +66,19 @@ void loop() {
     return;
   }
 
-  float percent = 100.0f * (1.0f - (static_cast<float>(distance - MIN_DISTANCE_MM) /
+  bool tilted = false;
+  bool sloshing = false;
+  float ax = 0.0f;
+  float ay = 0.0f;
+  float az = 0.0f;
+  bool accelAvailable = tiltSensor.readAcceleration(ax, ay, az);
+  if (accelAvailable) {
+    tilted = tiltSensor.isTilted();
+    sloshing = tiltSensor.isSloshing();
+  }
+
+  const float compensatedDistance = static_cast<float>(distance);
+  float percent = 100.0f * (1.0f - ((compensatedDistance - MIN_DISTANCE_MM) /
                                     (MAX_DISTANCE_MM - MIN_DISTANCE_MM)));
   if (percent < 0.0f) {
     percent = 0.0f;
@@ -76,17 +86,29 @@ void loop() {
     percent = 100.0f;
   }
 
-  display.updateDisplay(distance, percent);
+  const bool sloshHold = accelAvailable && sloshing;
+
+  float displayPercent = percent;
+  if (sloshHold && hasStablePercent) {
+    displayPercent = stablePercent;
+  } else {
+    stablePercent = percent;
+    hasStablePercent = true;
+  }
+
+  display.updateDisplay(distance, displayPercent, tilted, sloshHold);
 
   Serial.print("Distance (mm): ");
   Serial.print(distance);
+  Serial.print(" | Comp(mm): ");
+  Serial.print(compensatedDistance, 1);
   Serial.print(" | Percent (%): ");
-  Serial.print(percent, 1);
-
-  float ax = 0.0f;
-  float ay = 0.0f;
-  float az = 0.0f;
-  if (tiltSensor.readAcceleration(ax, ay, az)) {
+  Serial.print(displayPercent, 1);
+  Serial.print(" | Tilt:");
+  Serial.print(tilted ? "Y" : "N");
+  Serial.print(" | Slosh:");
+  Serial.print(sloshHold ? "Y" : "N");
+  if (accelAvailable) {
     Serial.print(" | Accel (m/s^2) X:");
     Serial.print(ax, 2);
     Serial.print(" Y:");

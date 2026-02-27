@@ -1,10 +1,11 @@
-# XIAO ESP32C3 Water Level Monitor (Current Version: v1.0.4)
+# XIAO ESP32C3 Water Level Monitor (Current Version: v1.0.5)
 
 PlatformIO project for Seeed Studio XIAO ESP32C3 that measures water distance with a
 VL53L4CD time-of-flight sensor and renders live status on a 0.96" IPS LCD (80x160)
-driven by ST7735 over SPI.
+driven by ST7735 over SPI, while using an MPU-6050 accelerometer for tilt/slosh-aware
+stability logic.
 
-**Current Version:** `v1.0.4`
+**Current Version:** `v1.0.5`
 
 ## Currently Working On
 
@@ -135,7 +136,12 @@ Both folders currently include `.gitkeep` placeholders so the structure is track
 
 ## Version History
 
-### V1.0.4 (Current)
+### V1.0.5 (Current)
+
+- **Code Improvements:** Redesigned MPU-6050 physics logic with startup baseline calibration and independent tilt/slosh detection paths. Stabilized angle comparison using baseline roll/pitch deltas to reduce false tilt triggers from sensor noise while preserving motion responsiveness for slosh events.
+- **Logistics & Formatting Changes:** Updated runtime UX to prioritize continuous percentage display with non-blocking tilt/slosh indicators, avoiding warning-screen interruptions and improving consistency on the shared I2C monitoring workflow.
+
+### V1.0.4
 
 - **Code Improvements:** Successfully wired and integrated the MPU-6050 accelerometer onto the shared I2C bus alongside the VL53L4CD. Implemented initial `TiltSensor` class to detect angled readings. Fixed severe ST7735 display bugs by removing unreliable dynamic bounds calculations (`getTextBounds`) in favor of stable, hardcoded absolute cursor positioning.
 - **Logistics & Formatting Changes:** Added Wiring Map for MPU-6050 and updating the breadboard_wiring pictures.

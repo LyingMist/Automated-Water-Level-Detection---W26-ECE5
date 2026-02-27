@@ -10,8 +10,7 @@ class DisplayDriver {
   bool begin();
   void showSplash(const char* title, const char* subtitle);
   // Renders a large centered percentage with color-threshold styling.
-  void updateDisplay(int distanceMM, float percentage);
-  void showTiltWarning();
+  void updateDisplay(int distanceMM, float percentage, bool isTilted, bool isSloshing);
   void showError(const char* message);
 
  private:
@@ -19,6 +18,10 @@ class DisplayDriver {
   bool initialized_ = false;
   bool hasLastPercentage_ = false;
   int lastDisplayedTenths_ = -1;
+  bool hasLastTiltState_ = false;
+  bool lastTiltState_ = false;
+  bool hasLastSloshState_ = false;
+  bool lastSloshState_ = false;
 
   void drawBaseFrame();
 };
