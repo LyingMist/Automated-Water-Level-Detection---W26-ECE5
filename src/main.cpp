@@ -89,7 +89,7 @@ void loop() {
   const bool sloshHold = accelAvailable && sloshing;
 
   float displayPercent = percent;
-  if (sloshHold && hasStablePercent) {
+  if ((sloshHold || tilted )&& hasStablePercent) {
     displayPercent = stablePercent;
   } else {
     stablePercent = percent;
