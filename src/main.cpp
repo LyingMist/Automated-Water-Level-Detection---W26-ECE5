@@ -31,7 +31,7 @@ void setup() {
   Serial.println("XIAO ESP32C3 Water Level Monitor booting...");
 
   Wire.begin(PIN_I2C_SDA, PIN_I2C_SCL);
-  Wire.setClock(100000);
+  Wire.setClock(50000);
 
   if (!display.begin()) {
     Serial.println("Display init failed");
@@ -89,7 +89,7 @@ void loop() {
   const bool sloshHold = accelAvailable && sloshing;
 
   float displayPercent = percent;
-  if ((sloshHold || tilted )&& hasStablePercent) {
+  if ((sloshHold || tilted )&& hasStablePercent) { // also hold for tilted since we are not switching water
     displayPercent = stablePercent;
   } else {
     stablePercent = percent;
